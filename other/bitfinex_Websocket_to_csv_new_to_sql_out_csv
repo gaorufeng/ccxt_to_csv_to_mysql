@@ -1,0 +1,134 @@
+
+# -*- coding:utf-8*-
+# -*- coding:utf-8*-
+
+#python36
+
+#功能bitfinex_Websocket_to_csv_new_to_sql_out_csv   从bitfinex_Websocket 获取的1分钟实时数据经过处理后导入数据库后从出数据库中导出
+
+from pandas import Series, DataFrame
+import pandas as pd
+import numpy as np
+
+import os
+import os.path
+import time
+
+
+import time
+from datetime import datetime
+
+from datetime import timedelta
+
+# -*- coding:utf-8 -*-
+import pandas as pd
+import pymysql
+import sys
+
+import numpy as np
+import pandas as pd
+
+
+from sqlalchemy import create_engine
+
+
+conn = pymysql.connect(host='127.0.0.1', \
+               user='root',password='数据库密码', \
+               db='ccxt1',charset='utf8', \
+               use_unicode=True)
+
+
+
+#codenameall = ["binance-BTCUSDT-1m","binance-BCHUSDT-1m","binance-EOSUSDT-1m","binance-ETHUSDT-1m","binance-LTCUSDT-1m","binance-XLMUSDT-1m","binance-XRPUSDT-1m"]
+
+
+file_path = 'O:/vps7.bitfs_webs/'
+#获取需要备份的表名字,这里是下载下来的csv路径
+
+codenameall = []
+for root, dirs, files in os.walk(file_path):# 注意：这里请填写数据文件在您电脑中的路径
+    if files:
+        for f in files:
+            if '_new.txt' in f:
+                codenameall.append(f.split('_new.txt')[0])
+print(codenameall)
+
+for cdname in codenameall:
+	table_name_1 = cdname
+
+
+	table_name = "`" + table_name_1 + "`"
+
+	sql = 'select * from ' + table_name
+	df = pd.read_sql(sql, con=conn)
+
+
+
+	df.sort_values('Timestamp', inplace=True)
+
+	#print(df)
+
+
+	#unix时间转换
+	df['Timestamp'] = pd.to_datetime(df['Timestamp'], unit='ms')
+
+
+	# 重点 把 date列 字符串 转换成日期格式
+
+	df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+
+
+
+	#时区处理#
+	df['Timestamp']=df['Timestamp']+timedelta(hours=8)
+
+
+	#df['date'] = pd.to_datetime(df['date'],unit='s')
+	#df[DATE_FIELD]=(pd.to_datetime(df[DATE_FIELD],unit='ms'))
+
+
+	#提取时间
+	df['time'] = pd.to_datetime(df['Timestamp'],format='%H%M')
+	df['time'] = pd.to_datetime(df['time']).dt.time
+
+	#提取时间
+	#df['date'] = pd.to_datetime(df['date'],format='%H%M')
+	df['date'] = pd.to_datetime(df['Timestamp']).dt.date
+
+
+
+	#插入time
+	mid = df['time']
+	df.drop(labels=['time'], axis=1,inplace = True)
+	df.insert(1, 'time', mid)
+
+
+	#插入date
+	mid = df['date']
+	df.drop(labels=['date'], axis=1,inplace = True)
+	df.insert(1, 'date', mid)
+
+	del df['Timestamp']
+
+
+	df['Volume'] = df['Volume'] *1000000000
+	
+
+
+	qihuo_name = 'binance_BTCUSDT'
+
+	zhouqi = '1m_ok'
+
+	#print(df[-10:])
+
+
+	try:
+		#最后一条数据不导入，已保证k线真实，缺点是晚了1分钟数据
+		df[:-1].to_csv('o:/vps7.bitfs_webs/' + table_name_1 +"_to_ok.csv", index=False)
+
+	except Exception:
+		print(qihuo_name + u'出错')
+	else:
+		print(qihuo_name+ u'输出ok')
+
+

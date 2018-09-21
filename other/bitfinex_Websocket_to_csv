@@ -1,0 +1,112 @@
+# _*_ coding:utf-8 _*_
+
+#https://bitfinex.com WebsocketApp  to  csv
+# 1分钟蜡烛图 to csv
+#a_old.txt 保存了 websocket提供的历史 (好像600条左右). a_latest.txt提供了实时1k数据
+
+
+
+#
+
+import websocket
+import json
+import os
+import re
+
+import sys
+
+
+while True:  #没有加入心跳包,最外面加了一个死循环,服务器中断以后自动重新连接
+
+    try:
+        import thread
+
+    except ImportError:
+        import _thread as thread
+        import time
+
+    def on_open(ws):
+        json_data = json.dumps({
+          "event": "subscribe",
+          "channel": "candles",
+          "key": "trade:1m:tBTCUSD"})
+        ws.send(json_data)
+        #上面的参数可以获取1k 蜡烛图 开高低收成交量
+        #https://docs.bitfinex.com/v2/reference#ws-public-candle
+
+
+    hb = "hb"
+    zhongguohao = "["
+    zhongguohao2= "[["
+
+    test = [0, 0]
+
+    def on_message(ws, message):
+
+        if hb in message:
+            print ("hb")
+
+
+        elif zhongguohao2 in message:
+
+            with open('M://vps5_test//a_latest.webs_old.txt', 'a') as f:
+                f.write(message+'\n')
+
+        elif zhongguohao in message:
+
+            with open('M://vps5_test//a_latest.webs_new.txt', 'a') as f:
+                arr = message
+                print(type(message))
+                print(message)
+                #字符串格式的 [221135,[1536587880000,6309.0209674,6310,6310.2,6309.0209674,26.240407]]
+                # 注意, wss获取的不是 开高低收  是开收高低, 导入数据库的时候需要进一步优化
+                message = message.replace('[', '')
+                #去除 "["
+                message = message.replace(']', '')
+                # 去除 "]"
+                print(message)
+
+                mes_list = []
+                mes_list = message.split(",")
+                #转换成数组list
+                del mes_list[0]
+                #去除第一个
+                print(mes_list)
+                mes_str = ','.join(mes_list)
+                f.write(mes_str+'\n')
+
+
+        else:
+            print("other scr")
+            print(message)
+            time.sleep(1)
+
+    def on_error(ws, error):
+        print(error)
+        time.sleep(10)
+
+    def on_close(ws):
+        print("### closed ###")
+        time.sleep(10)
+
+
+    websocket.enableTrace(True)
+    ws = websocket.WebSocketApp("wss://api.bitfinex.com/ws/",
+                                on_open = on_open,
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
+
+    ws.run_forever(sslopt={"check_hostname": False})
+
+    time.sleep(5)
+
+    print("abc")
+
+
+#ws = websocket.WebSocketApp('wss://api.bitfinex.com/ws/2')
+#ws.on_open = lambda self: self.send('{ "event": "subscribe",  "channel": "candles",  "key": "trade:1m:tBTCUSD" }')
+#ws.on_message = lambda self, evt:  print (evt)
+
+
+#感谢 unknown labs

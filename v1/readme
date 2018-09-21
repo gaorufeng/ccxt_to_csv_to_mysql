@@ -1,0 +1,4 @@
+版本1
+
+# beta1_ccxt_to_mysql 负责新建表,和字段, beta2_ccxt_to_mysql负责导入csv ; beta1and2_ccxt_to_mysql 是2个一起运行,如何获得csv 见 https://github.com/gaorufeng/ccxt_to_csv_to_mysql
+#20180901 beta1and2_ccxt_to_mysql 肯定能修改,先实现功能

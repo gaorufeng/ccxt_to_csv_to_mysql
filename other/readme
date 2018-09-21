@@ -1,0 +1,33 @@
+backup_mysql_to_csv.py
+#备份数据库 到 csv文件
+
+
+bitfinex_Websocket_to_csv
+#通过bitfinex 的 Websocket wss  获取实时的1分钟蜡烛图数据
+
+bitfinex_Websocket_to_csv_new_to_sql
+
+bitfinex_Websocket_to_csv 生成的new数据导入数据库
+
+bitfinex_Websocket_to_csv_old_to_sql
+
+bitfinex_Websocket_to_csv 生成的old数据导入数据库
+
+bitfinex_Websocket_to_csv_new_to_sql_out_csv
+把上面导入到数据库的内容再导出数据库
+
+
+ccex_mysql_to_datetime.py
+#从数据库获取数据,并且修改datetime
+
+
+cvs_vs1.py
+#两个文件对比 如果a文件多出一行, b文件也会追加一行数据
+
+
+download_1k_by_bitfinex
+##从bitfinex获取 1分钟历史数据,可以追溯到几年以前
+
+
+download_1k_by_bitfinex_to_sql
+从bitfinex获取 1分钟历史数据,导入数据库

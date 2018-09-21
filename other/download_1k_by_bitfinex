@@ -1,0 +1,85 @@
+# -*- coding: utf-8 -*-
+#python 3
+import os
+import sys
+import time
+from pandas import DataFrame
+
+#从bitfinex获取 1分钟历史数据,可以追溯到几年以前
+#需要翻墙或者 外网,一台机器IP只能同时运行一个程序
+
+# -----------------------------------------------------------------------------
+
+root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(root + './')
+
+# -----------------------------------------------------------------------------
+
+import ccxt  # noqa: E402
+
+# -----------------------------------------------------------------------------
+# common constants
+
+msec = 1000   #需要修改
+minute = 60 * msec   #需要修改
+
+k_1 = '1m'   #需要修改
+
+hold = 30   #什么作用? 需要修改
+
+# -----------------------------------------------------------------------------
+
+exchange = ccxt.bitfinex2({
+    'rateLimit': 10000,
+    'enableRateLimit': True,
+    # 'verbose': True,
+})
+
+# -----------------------------------------------------------------------------
+
+from_datetime = '2017-01-01 00:00:00'   #修改  开始时间    #需要修改
+from_timestamp = exchange.parse8601(from_datetime)
+
+# -----------------------------------------------------------------------------
+
+now = exchange.milliseconds()
+
+# -----------------------------------------------------------------------------
+
+data = []
+
+while from_timestamp < now:
+
+    try:
+
+        print(exchange.milliseconds(), 'Fetching candles starting from', exchange.iso8601(from_timestamp))
+        ohlcvs = exchange.fetch_ohlcv('BCH/USDT', k_1, from_timestamp)   #需要修改
+        print(exchange.milliseconds(), 'Fetched', len(ohlcvs), 'candles')
+        first = ohlcvs[0][0]
+        last = ohlcvs[-1][0]
+        print('First candle epoch', first, exchange.iso8601(first))
+        print('Last candle epoch', last, exchange.iso8601(last))
+
+        #from_timestamp += len(ohlcvs) * minute * 1   #需要修改?
+        # from_timestamp += 60000
+        from_timestamp = last+minute*1   #需要修改?　# 更改周期 这里的1是否需要修改? 看返回 First candle 和 Last candle调整
+
+        #data += ohlcvs
+
+        print(ohlcvs)
+
+        df = DataFrame(ohlcvs)
+
+        #print(df)
+
+        savepath = "webs_bch_1k/bch_usdt_" + str(first) + "_" + str(last) + ".csv"　　 #需要修改
+
+        df.to_csv(savepath, index=False, header = False)
+
+
+        time.sleep(1)
+
+    except (ccxt.ExchangeError, ccxt.AuthenticationError, ccxt.ExchangeNotAvailable, ccxt.RequestTimeout) as error:
+
+        print('Got an error', type(error).__name__, error.args, ', retrying in', hold, 'seconds...')
+        time.sleep(hold)

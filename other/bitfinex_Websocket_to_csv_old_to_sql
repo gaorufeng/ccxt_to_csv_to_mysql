@@ -1,0 +1,192 @@
+# _*_ coding:utf-8 _*_
+
+#新建表,符合 ccxt1
+
+
+### python27
+
+
+#from sqlalchemy import create_engine
+import MySQLdb
+import os
+import csv
+import pandas as pd
+from pandas import Series, DataFrame
+
+
+##需要修改的地方
+#engine = create_engine('mysql://root:数据库密码@192.168.100.151/stock?charset=utf8')
+conn = MySQLdb.connect(host='192.168.100.151', user='root', passwd='数据库密码', charset="utf8")
+db = MySQLdb.connect(host='192.168.100.151',user='root', passwd='数据库密码', charset="utf8")
+
+
+#数据库名
+data_name = 'ccxt1'
+
+#获取目录下面csv的文件名 导入到列表
+file_path = 'O://vps7.bitfs_webs/'
+
+##修改结束
+
+#连接数据库（参照MySQL Workbench中的设定）
+
+
+data_name2 = 'USE ccxt1'
+#数据库名 只修改 ccxt1 , 保留USE
+
+
+
+codenameall = []
+for root, dirs, files in os.walk(file_path):# 注意：这里请填写数据文件在您电脑中的路径
+    if files:
+        for f in files:
+            if '_old.txt' in f:
+                codenameall.append(f.split('_old.txt')[0])
+print (codenameall)
+
+# 股票代码
+#codenameall = ['sh600000_noid']
+
+# 循环导入上述股票
+
+for cdname in codenameall:
+
+    acdname1 = cdname
+
+    cursor = conn.cursor()
+
+    #数据库名字
+    conn.select_db(data_name)
+
+    #Timestamp,Open,High,Low,Close,Volume
+
+    try:
+        cursor.execute("""
+          CREATE TABLE IF NOT EXISTS `%s`(
+              `Timestamp` double NOT NULL PRIMARY KEY AUTO_INCREMENT UNIQUE,
+              `Open` double DEFAULT NULL,
+              `High` double DEFAULT NULL,
+              `Low` double DEFAULT NULL,
+              `Close` double DEFAULT NULL,
+              `Volume` double DEFAULT NULL
+
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+          """ % acdname1)
+
+
+        cursor.close()
+        print "sql ok"
+    except:
+        cursor.close()
+        print "sql not ok, already exists"
+
+
+print("1 over")
+
+
+###########
+#这里先要处理一下重复数据的问题
+for cdname in codenameall:
+    #table_name = cdname
+    print(cdname)
+
+
+
+    #文本处理第一部分 原版是合并的,处理好导出到txt是一行一行
+
+    file_object = open(file_path + cdname +'_old.txt', mode='r')
+
+    all_the_text = file_object.read()
+    char_1 = '[['
+    nPos = all_the_text.index(char_1)
+    all_the_text = all_the_text[nPos:]
+
+    # print(all_the_text)
+
+    # 这里应该可以更加优化,没必要去找末尾的 "]]]", 不过如果统计len,也有缺点,万一文本后面有空格那
+    char_2 = ']]]'
+    nPos2 = all_the_text.index(char_2)
+
+    # print(len(all_the_text))
+    # print(nPos2)
+    # print(all_the_text[:nPos2+2])
+
+    all_the_text = all_the_text[:nPos2]
+
+    list_arr = all_the_text[2:]
+
+    list_arr = list_arr.replace('],[', '\n')
+
+    #print(list_arr)
+
+    txt = open(file_path + cdname +'_old_v1.txt', 'w')  # 若是'wb'就表示写二进制文件
+    txt.write(list_arr)
+    txt.close()
+
+    #处理第二部分, 可能有的重复, open high 位置不对的问题 close
+
+
+    #这里的顺序是错误的 bitf的webstock  不是按照 open high low close, 他是  O C H L , 不过先选这样定义 导入数据的时候处理
+
+    df=pd.read_csv(file_path + cdname + '_old_v1.txt',header=None,names=["Timestamp",'Open','High','Low','Close','Volume'])
+    #filename可以直接从盘符开始，标明每一级的文件夹直到csv文件，header=None表示头部为空，sep=' '表示数据间使用空格作为分隔符，如果分隔符是逗号，只需换成 ‘，’即可。
+
+    #对两列排序
+    df = df.sort_index(by=['Timestamp','Volume'])
+
+    #去重复
+    df = df.drop_duplicates(['Timestamp'],keep='last')
+
+    df.to_csv(file_path+cdname+'_old_v2.txt',index=False,header=None)
+    #print(cdname)
+    #print df.iloc[:, 0].size
+
+    #print(df)
+#
+print("2 over")
+
+
+
+cur = db.cursor()
+
+#print (codenameall)
+
+for cdname in codenameall:
+
+    table_name = cdname
+
+    filename = file_path + cdname + '_old_v2.txt'
+
+    print(filename)
+
+    Generaldata = csv.reader(file(filename))
+
+    cur.execute(data_name2)
+    # cur.execute('DROP TABLE IF EXISTS T1') #用于卸掉旧表
+
+
+
+    #for row in Generaldata:
+    #Generaldata 第一行有导入
+
+    for row in list(Generaldata)[:]:
+        ##(Generaldata)[1:] 去除第一行
+
+        # bitf的webstock  不是按照 open high low close, 他是  O C H L 所以这里导入的时候要调整下
+        cur.execute('''replace into `%s` (Timestamp,Open,High,Low,Close,Volume) VALUES(%s,%s,%s,%s,%s,%s)''' % (
+        table_name, row[0], row[1], row[3], row[4], row[2], row[5]))
+        # 这里使用INSERT ignore INTO ,不会重复,也不会覆盖, 详见 底下备注1  #replace into 覆盖
+    db.commit()
+
+
+
+
+
+    #备注 1
+#INSERT ignore INTO
+# MySQL避免插入重复记录的方法  https://www.cnblogs.com/prayer21/p/6018864.html
+#mysql 忽略主键冲突、避免重复插入的几种方式  https://my.oschina.net/leejun2005/blog/150510
+#MySQL批量插入遇上唯一索引避免方法（避免导入重复数据）  https://blog.csdn.net/jinmaodao116/article/details/54134480
+
+#本文参考
+#用python将CSV转入Mysql  https://wwshen.gitbooks.io/omooc2py/content/0MOOC/CSVtoMYSQL.html
