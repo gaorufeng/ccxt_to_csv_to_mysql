@@ -31,3 +31,39 @@ download_1k_by_bitfinex
 
 download_1k_by_bitfinex_to_sql
 从bitfinex获取 1分钟历史数据,导入数据库
+
+
+
+
+关于安装 ccxt出现  cytoolz 和 lru-dict 错误的解决方法
+
+
+Command "c:\pytest1\scripts\python.exe -u -c "import setuptools, tokenize;__file__='C:\\Users\\sh18\\AppData\\Local\\Temp\\pip-install-43em1dri\\cytoolz\\setup.py';f=getattr(tokenize, 'open', open)(__file__);code=f.read().replace('\r\n', '\n');f.close();exec(compile(code, __file__, 'exec'))" install --record C:\Users\sh18\AppData\Local\Temp\pip-record-8aff6mqv\install-record.txt --single-version-externally-managed --compile --install-headers c:\pytest1\include\site\python3.6\cytoolz" failed with error code 1 in C:\Users\sh18\AppData\Local\Temp\pip-install-43em1dri\cytoolz\
+
+
+   ----------------------------------------
+Command "c:\pytest1\scripts\python.exe -u -c "import setuptools, tokenize;__file__='C:\\Users\\sh18\\AppData\\Local\\Temp\\pip-install-fgvjkayq\\lru-dict\\setup.py';f=getattr(tokenize, 'open', open)(__file__);code=f.read().replace('\r\n', '\n');f.close();exec(compile(code, __file__, 'exec'))" install --record C:\Users\sh18\AppData\Local\Temp\pip-record-imn_36vg\install-record.txt --single-version-externally-managed --compile --install-headers c:\pytest1\include\site\python3.6\lru-dict" failed with error code 1 in C:\Users\sh18\AppData\Local\Temp\pip-install-fgvjkayq\lru-dict\
+
+
+
+访问 https://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+搜索   cytoolz 和 lru-dict 
+
+
+找到pytho对应的版本 cp36 就是 python36
+
+pywin32‑223.1‑cp36‑cp36m‑win_amd64.whl
+
+lru_dict‑1.1.6‑cp36‑cp36m‑win_amd64.whl
+
+下载后 把whl 文件放在 同目录下或指定路径, 安装
+
+pip install pywin32‑223.1‑cp36‑cp36m‑win_amd64.whl
+
+pip install lru_dict‑1.1.6‑cp36‑cp36m‑win_amd64.whl
+
+
+再次安装 
+
+pip install ccxt
