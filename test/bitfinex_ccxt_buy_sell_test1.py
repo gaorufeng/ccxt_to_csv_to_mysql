@@ -175,7 +175,7 @@ def duo_kai():
     amount = kaichang_zhongshu
 
     print("发出 exchange买多委托")
-    order_info = bitfinex.create_limit_buy_order(symbol, amount, pirce, {'type': 'exchange limit'})  # margin买单
+    order_info = bitfinex.create_limit_buy_order(symbol, amount, pirce, {'type': 'exchange limit'})  # exchange 买单
 
     #返回委托编号
     weituo_bianhao = order_info['id']
@@ -191,7 +191,7 @@ def duo_pin():
 
 
     amount = kaichang_zhongshu - (kaichang_zhongshu*0.003)
-    order_info = bitfinex.create_market_sell_order(symbol, amount, {'type': 'exchange market'})  # margin买单
+    order_info = bitfinex.create_market_sell_order(symbol, amount, {'type': 'exchange market'})  #exchange 平多
 
     #返回委托编号
     weituo_bianhao = order_info['id']
@@ -211,7 +211,7 @@ def kong_kai():
 
 
     print("发出 卖空委托")
-    order_info = bitfinex.create_limit_sell_order(symbol, amount, pirce_kong, {'type': 'limit'})  # margin卖单
+    order_info = bitfinex.create_limit_sell_order(symbol, amount, pirce_kong, {'type': 'limit'})  # margin卖单 开空或平多
     #print( order_info)
     #print(order_info['id'])
 
@@ -230,7 +230,7 @@ def kong_pin():
     #这里应该获取已知仓位数
     amount = kaichang_zhongshu - (kaichang_zhongshu*0.003)
 
-    order_info = bitfinex.create_market_buy_order(symbol, amount, {'type': 'market'})  # margin买单
+    order_info = bitfinex.create_market_buy_order(symbol, amount, {'type': 'market'})  # margin买单 开多或平空
     #委托空平已经结束
 
     #返回委托编号
