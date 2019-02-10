@@ -75,7 +75,7 @@ max_mp = 13
 
 
 json_path = "EOS.json"
-      
+#如果不在同一目录就改 json_path = "C:/phpStudy/WWW/json/EOS.json"
 
 error_log_file = "online_3_bit_error_log_file.txt"
 
