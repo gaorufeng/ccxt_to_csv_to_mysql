@@ -9,7 +9,12 @@ import time
 from dateutil import parser
 import ccxt
 
+#备注 开仓多少只用到 json文件中的 "duokong_all_new",
 
+#"duokong_all_old" 这行没有用的
+      
+      
+      
 # nowTime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
