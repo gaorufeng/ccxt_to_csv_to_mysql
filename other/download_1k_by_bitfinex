@@ -5,6 +5,8 @@ import sys
 import time
 from pandas import DataFrame
 
+#20190627 注意 获取 20190315后数据 需要把usdt改成usd
+#ohlcvs = exchange.fetch_ohlcv('XRP/USDT', '1m', from_timestamp)
 
 #20181001 上一个版本不知道为什么老是被屏蔽,稍微改了下代码 继续观察
 #从bitfinex获取 1分钟历史数据,可以追溯到几年以前
@@ -58,7 +60,10 @@ while from_timestamp < now:
     try:
 
         print(exchange.milliseconds(), 'Fetching candles starting from', exchange.iso8601(from_timestamp))
-        ohlcvs = exchange.fetch_ohlcv('XRP/USDT', '1m', from_timestamp)
+        #ohlcvs = exchange.fetch_ohlcv('XRP/USDT', '1m', from_timestamp)
+	ohlcvs = exchange.fetch_ohlcv('XRP/USD', '1m', from_timestamp)
+	
+	
         print(exchange.milliseconds(), 'Fetched', len(ohlcvs), 'candles')
         first = ohlcvs[0][0]
         last = ohlcvs[-1][0]
