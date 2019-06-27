@@ -6,6 +6,8 @@ import time
 from pandas import DataFrame
 
 #使用方法 需要安装ccxt, 同目录创建 webs_xrp_1k 文件夹, 如果需要修改其他币请相应修改
+#注意抓取的电脑最好时区和bitfinex同步 utc时间
+
 
 #20190627 注意 获取 20190315后数据 需要把usdt改成usd
 #ohlcvs = exchange.fetch_ohlcv('XRP/USDT', '1m', from_timestamp)
